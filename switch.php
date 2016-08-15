@@ -6,7 +6,7 @@ $perMinute = 10;
 $count = 0;
 require('routeros_api.class.php');
 $router = new RouterosAPI();
-if ($router->connect('192.168.77.101', 'admin', 'mantis454'))
+if ($router->connect('192.168.77.101', 'USER', 'PASSWORD'))
 {
 	while($count < $perMinute)
 	{
