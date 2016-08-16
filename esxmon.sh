@@ -32,6 +32,8 @@ do
     pool3=`snmpget -v 2c -c public 192.168.77.75 .1.3.6.1.4.1.25359.1.1.12.2 -Ov`
     pool4=`snmpget -v 2c -c public 192.168.77.75 .1.3.6.1.4.1.25359.1.1.12.3 -Ov`
     pool5=`snmpget -v 2c -c public 192.168.77.75 .1.3.6.1.4.1.25359.1.1.12.4 -Ov`
+    #Mikrotik temperature
+    switch1=`snmpget -v 2c -c public 192.168.77.101 .1.3.6.1.4.1.14988.1.1.3.10.0 -Ov`
 
     #Strip out the value from the SNMP query
     cpu1=$(echo $cpu1 | cut -c 10-)
@@ -54,6 +56,7 @@ do
     data12=$(echo $data2 | cut -c 10-)
     data1=$((457728 - data11))
     data2=$((511744 - data12))
+    switch1=$(echo $switch1 | cut -c 10-)
 
     #Now lets get the hardware info from the remote host
     hwinfo=$(ssh -t 192.168.77.175 "esxcfg-info --hardware")
@@ -124,6 +127,7 @@ do
     curl -i -XPOST 'http://localhost:8086/write?db=home' --data-binary "freenas_stats,host=freenas,type=disk_space,pool_num=5 value=$pool5"
     curl -i -XPOST 'http://localhost:8086/write?db=home' --data-binary "esxi_stats,host=esxi1,type=disk_usage,datastore=1 value=$data1"
     curl -i -XPOST 'http://localhost:8086/write?db=home' --data-binary "esxi_stats,host=esxi1,type=disk_usage,datastore=2 value=$data2"
+    curl -i -XPOST 'http://localhost:8086/write?db=home' --data-binary "switch_stats,switch=mikrotik,type=temperature value=$switch1"
 #Wait for a bit before checking again
     sleep "$sleeptime"
     
