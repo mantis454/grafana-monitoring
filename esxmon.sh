@@ -57,6 +57,7 @@ do
     data1=$((457728 - data11))
     data2=$((511744 - data12))
     switch1=$(echo $switch1 | cut -c 10-)
+    cpu99=$(((cpu1+cpu2+cpu3+cpu4+cpu5+cpu6+cpu7+cpu8) / 8))
 
     #Now lets get the hardware info from the remote host
     hwinfo=$(ssh -t 192.168.77.175 "esxcfg-info --hardware")
@@ -116,6 +117,7 @@ do
     curl -i -XPOST 'http://localhost:8086/write?db=home' --data-binary "esxi_stats,host=esxi1,type=cpu_usage,cpu_number=6 value=$cpu6"
     curl -i -XPOST 'http://localhost:8086/write?db=home' --data-binary "esxi_stats,host=esxi1,type=cpu_usage,cpu_number=7 value=$cpu7"
     curl -i -XPOST 'http://localhost:8086/write?db=home' --data-binary "esxi_stats,host=esxi1,type=cpu_usage,cpu_number=8 value=$cpu8"
+    curl -i -XPOST 'http://localhost:8086/write?db=home' --data-binary "esxi_stats,host=esxi1,type=cpu_usage,cpu_number=99 value=$cpu99"
     curl -i -XPOST 'http://localhost:8086/write?db=home' --data-binary "esxi_stats,host=esxi1,type=memory_usage value=$pcent"
     curl -i -XPOST 'http://localhost:8086/write?db=home' --data-binary "esxi_stats,host=esxi1,type=uptime value=$uptime"
     curl -i -XPOST 'http://localhost:8086/write?db=home' --data-binary "freenas_stats,host=esxi1,type=cpu_usage,cpu_number=9 value=$cpu9"
