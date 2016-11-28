@@ -2,11 +2,11 @@
 chdir(__DIR__);
 // script to get stats from Mikrotik switch
 // this script is cron'ed once a minute, but logs multiple times a minute
-$perMinute = 10;
+$perMinute = 3;
 $count = 0;
 require('routeros_api.class.php');
 $router = new RouterosAPI();
-if ($router->connect('192.168.77.101', 'USER', 'PASSWORD'))
+if ($router->connect('192.168.77.101', 'admin', 'mantis454'))
 {
 	while($count < $perMinute)
 	{

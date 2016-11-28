@@ -29,9 +29,10 @@ do
     #Freenas Disk space
     pool1=`snmpget -v 2c -c public 192.168.77.75 .1.3.6.1.4.1.25359.1.1.12.0 -Ov`
     pool2=`snmpget -v 2c -c public 192.168.77.75 .1.3.6.1.4.1.25359.1.1.12.1 -Ov`
-    pool3=`snmpget -v 2c -c public 192.168.77.75 .1.3.6.1.4.1.25359.1.1.12.2 -Ov`
-    pool4=`snmpget -v 2c -c public 192.168.77.75 .1.3.6.1.4.1.25359.1.1.12.3 -Ov`
     pool5=`snmpget -v 2c -c public 192.168.77.75 .1.3.6.1.4.1.25359.1.1.12.4 -Ov`
+    pool1a=`snmpget -v 2c -c public 192.168.77.75 .1.3.6.1.4.1.25359.1.1.13.0 -Ov`
+    pool2a=`snmpget -v 2c -c public 192.168.77.75 .1.3.6.1.4.1.25359.1.1.13.1 -Ov`
+    pool5a=`snmpget -v 2c -c public 192.168.77.75 .1.3.6.1.4.1.25359.1.1.13.4 -Ov`
     #Mikrotik temperature
     switch1=`snmpget -v 2c -c public 192.168.77.101 .1.3.6.1.4.1.14988.1.1.3.10.0 -Ov`
 
@@ -49,9 +50,10 @@ do
     uptime=$(echo $uptime | awk '{print $2}' | grep -o '[0-9]\+')
     pool1=$(echo $pool1 | cut -c 10-)
     pool2=$(echo $pool2 | cut -c 10-)
-    pool3=$(echo $pool3 | cut -c 10-)
-    pool4=$(echo $pool4 | cut -c 10-)
     pool5=$(echo $pool5 | cut -c 10-)
+    pool1a=$(echo $pool1a | cut -c 10-)
+    pool2a=$(echo $pool2a | cut -c 10-)
+    pool5a=$(echo $pool5a | cut -c 10-)
     data11=$(echo $data1 | cut -c 10-)
     data12=$(echo $data2 | cut -c 10-)
     data1=$((457728 - data11))
@@ -124,9 +126,10 @@ do
     curl -i -XPOST 'http://localhost:8086/write?db=home' --data-binary "freenas_stats,host=esxi1,type=cpu_usage,cpu_number=10 value=$cpu10"
     curl -i -XPOST 'http://localhost:8086/write?db=home' --data-binary "freenas_stats,host=freenas,type=disk_space,pool_num=1 value=$pool1"
     curl -i -XPOST 'http://localhost:8086/write?db=home' --data-binary "freenas_stats,host=freenas,type=disk_space,pool_num=2 value=$pool2"
-    curl -i -XPOST 'http://localhost:8086/write?db=home' --data-binary "freenas_stats,host=freenas,type=disk_space,pool_num=3 value=$pool3"
-    curl -i -XPOST 'http://localhost:8086/write?db=home' --data-binary "freenas_stats,host=freenas,type=disk_space,pool_num=4 value=$pool4"
     curl -i -XPOST 'http://localhost:8086/write?db=home' --data-binary "freenas_stats,host=freenas,type=disk_space,pool_num=5 value=$pool5"
+    curl -i -XPOST 'http://localhost:8086/write?db=home' --data-binary "freenas_stats,host=freenas,type=disk_space,pool_num=6 value=$pool1a"
+    curl -i -XPOST 'http://localhost:8086/write?db=home' --data-binary "freenas_stats,host=freenas,type=disk_space,pool_num=7 value=$pool2a"
+    curl -i -XPOST 'http://localhost:8086/write?db=home' --data-binary "freenas_stats,host=freenas,type=disk_space,pool_num=8 value=$pool5a"
     curl -i -XPOST 'http://localhost:8086/write?db=home' --data-binary "esxi_stats,host=esxi1,type=disk_usage,datastore=1 value=$data1"
     curl -i -XPOST 'http://localhost:8086/write?db=home' --data-binary "esxi_stats,host=esxi1,type=disk_usage,datastore=2 value=$data2"
     curl -i -XPOST 'http://localhost:8086/write?db=home' --data-binary "switch_stats,switch=mikrotik,type=temperature value=$switch1"
