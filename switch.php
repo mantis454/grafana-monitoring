@@ -6,9 +6,10 @@ $perMinute = 3;
 $count = 0;
 require('routeros_api.class.php');
 $router = new RouterosAPI();
-if ($router->connect('192.168.77.101', 'admin', 'mantis454'))
+if ($router->connect('192.168.77.99', 'admin', 'mantis454'))
 {
 	while($count < $perMinute)
+//	while($count < 3)
 	{
 		$router->write('/interface/getall');
 		$read = $router->read(false);
@@ -36,6 +37,7 @@ if ($router->connect('192.168.77.101', 'admin', 'mantis454'))
     // maybe fire more than once a minute
 		$count++;
 		sleep(60 / $perMinute);
+//		sleep(18);
 	}
 	$router->disconnect();
 }
