@@ -20,7 +20,11 @@ do
     cpu6=`snmpget -v 2c -c public 192.168.77.175 HOST-RESOURCES-MIB::hrProcessorLoad.6 -Ov`
     cpu7=`snmpget -v 2c -c public 192.168.77.175 HOST-RESOURCES-MIB::hrProcessorLoad.7 -Ov`
     cpu8=`snmpget -v 2c -c public 192.168.77.175 HOST-RESOURCES-MIB::hrProcessorLoad.8 -Ov`
-    uptime=`snmpget -v 2c -c public 192.168.77.175 SNMPv2-MIB::sysUpTime.0 -Ov`
+    cpu21=`snmpget -v 2c -c public 192.168.77.176 HOST-RESOURCES-MIB::hrProcessorLoad.1 -Ov`
+    cpu22=`snmpget -v 2c -c public 192.168.77.176 HOST-RESOURCES-MIB::hrProcessorLoad.2 -Ov`
+    cpu23=`snmpget -v 2c -c public 192.168.77.176 HOST-RESOURCES-MIB::hrProcessorLoad.3 -Ov`
+    cpu24=`snmpget -v 2c -c public 192.168.77.176 HOST-RESOURCES-MIB::hrProcessorLoad.4 -Ov`
+#   uptime=`snmpget -v 2c -c public 192.168.77.175 SNMPv2-MIB::sysUpTime.0 -Ov`
     cpu9=`snmpget -v 2c -c public 192.168.77.75 HOST-RESOURCES-MIB::hrProcessorLoad.196608 -Ov`
     cpu10=`snmpget -v 2c -c public 192.168.77.75 HOST-RESOURCES-MIB::hrProcessorLoad.196609 -Ov`
     #VMware disk usage
@@ -47,7 +51,11 @@ do
     cpu8=$(echo $cpu8 | cut -c 10-)
     cpu9=$(echo $cpu9 | cut -c 10-)
     cpu10=$(echo $cpu10 | cut -c 10-)
-    uptime=$(echo $uptime | awk '{print $2}' | grep -o '[0-9]\+')
+    cpu21=$(echo $cpu21 | cut -c 10-)
+    cpu22=$(echo $cpu22 | cut -c 10-)
+    cpu23=$(echo $cpu23 | cut -c 10-)
+    cpu24=$(echo $cpu24 | cut -c 10-)
+ #  uptime=$(echo $uptime | awk '{print $2}' | grep -o '[0-9]\+')
     pool1=$(echo $pool1 | cut -c 10-)
     pool2=$(echo $pool2 | cut -c 10-)
     pool5=$(echo $pool5 | cut -c 10-)
@@ -101,17 +109,57 @@ do
     used=$((kmem - freemem))
     used=$((used * 100))
     pcent=$((used / kmem))
+
+    #Now lets get the hardware info from the remote host
+    hwinfo1=$(ssh -t 192.168.77.176 "esxcfg-info --hardware")
+
+    #Lets try to find the lines we are looking for
+    while read -r line; do
+        #Check if we have the line we are looking for
+        if [[ $line == *"Kernel Memory"* ]]
+        then
+          kmemline=$line
+        fi
+        if [[ $line == *"-Free."* ]]
+        then
+          freememline=$line
+        fi
+        #echo "... $line ..."
+    done <<< "$hwinfo1"
+
+    #Remove the long string of .s
+    kmemline=$(echo $kmemline | tr -s '[.]')
+    freememline=$(echo $freememline | tr -s '[.]')
+
+    #Lets parse out the memory values from the strings
+    #First split on the only remaining . in the strings
+    IFS='.' read -ra kmemarr <<< "$kmemline"
+    kmem=${kmemarr[1]}
+    IFS='.' read -ra freememarr <<< "$freememline"
+    freemem=${freememarr[1]}
+    #Now break it apart on the space
+    IFS=' ' read -ra kmemarr <<< "$kmem"
+    kmem=${kmemarr[0]}
+    IFS=' ' read -ra freememarr <<< "$freemem"
+    freemem=${freememarr[0]}
+
+    #Now we can finally calculate used percentage
+    used=$((kmem - freemem))
+    used=$((used * 100))
+    pcent1=$((used / kmem))
+
+
     
-    echo "CPU1: $cpu1%"
-    echo "CPU2: $cpu2%"
-    echo "CPU3: $cpu3%"
-    echo "CPU4: $cpu4%"
-    echo "CPU5: $cpu5%"
-    echo "CPU6: $cpu6%"
-    echo "CPU7: $cpu7%"
-    echo "CPU8: $cpu8%"
-    echo "Memory Used: $pcent%"
-    echo "Uptime: $uptime"
+#    echo "CPU1: $cpu1%"
+#    echo "CPU2: $cpu2%"
+#    echo "CPU3: $cpu3%"
+#    echo "CPU4: $cpu4%"
+#    echo "CPU5: $cpu5%"
+#    echo "CPU6: $cpu6%"
+#    echo "CPU7: $cpu7%"
+#    echo "CPU8: $cpu8%"
+#    echo "Memory Used: $pcent%"
+#    echo "Uptime: $uptime"
     
     #Write the data to the database
     curl -i -XPOST 'http://localhost:8086/write?db=home' --data-binary "esxi_stats,host=esxi1,type=cpu_usage,cpu_number=1 value=$cpu1"
@@ -122,9 +170,14 @@ do
     curl -i -XPOST 'http://localhost:8086/write?db=home' --data-binary "esxi_stats,host=esxi1,type=cpu_usage,cpu_number=6 value=$cpu6"
     curl -i -XPOST 'http://localhost:8086/write?db=home' --data-binary "esxi_stats,host=esxi1,type=cpu_usage,cpu_number=7 value=$cpu7"
     curl -i -XPOST 'http://localhost:8086/write?db=home' --data-binary "esxi_stats,host=esxi1,type=cpu_usage,cpu_number=8 value=$cpu8"
+    curl -i -XPOST 'http://localhost:8086/write?db=home' --data-binary "esxi_stats,host=esxi2,type=cpu_usage,cpu_number=1 value=$cpu21"
+    curl -i -XPOST 'http://localhost:8086/write?db=home' --data-binary "esxi_stats,host=esxi2,type=cpu_usage,cpu_number=2 value=$cpu22"
+    curl -i -XPOST 'http://localhost:8086/write?db=home' --data-binary "esxi_stats,host=esxi2,type=cpu_usage,cpu_number=3 value=$cpu23"
+    curl -i -XPOST 'http://localhost:8086/write?db=home' --data-binary "esxi_stats,host=esxi2,type=cpu_usage,cpu_number=4 value=$cpu24"
     curl -i -XPOST 'http://localhost:8086/write?db=home' --data-binary "esxi_stats,host=esxi1,type=cpu_usage,cpu_number=99 value=$cpu99"
     curl -i -XPOST 'http://localhost:8086/write?db=home' --data-binary "esxi_stats,host=esxi1,type=memory_usage value=$pcent"
-    curl -i -XPOST 'http://localhost:8086/write?db=home' --data-binary "esxi_stats,host=esxi1,type=uptime value=$uptime"
+    curl -i -XPOST 'http://localhost:8086/write?db=home' --data-binary "esxi_stats,host=esxi2,type=memory_usage value=$pcent1"
+#   curl -i -XPOST 'http://localhost:8086/write?db=home' --data-binary "esxi_stats,host=esxi1,type=uptime value=$uptime"
     curl -i -XPOST 'http://localhost:8086/write?db=home' --data-binary "freenas_stats,host=esxi1,type=cpu_usage,cpu_number=9 value=$cpu9"
     curl -i -XPOST 'http://localhost:8086/write?db=home' --data-binary "freenas_stats,host=esxi1,type=cpu_usage,cpu_number=10 value=$cpu10"
     curl -i -XPOST 'http://localhost:8086/write?db=home' --data-binary "freenas_stats,host=freenas,type=disk_space,pool_num=1 value=$pool1"
