@@ -36,7 +36,7 @@ do
         then
           d_Seag1=$line
         fi
-		if [[ $line == *"W30164CV"* ]]
+		if [[ $line == *"S300ZACJ"* ]]
         then
           d_Seag2=$line
         fi
